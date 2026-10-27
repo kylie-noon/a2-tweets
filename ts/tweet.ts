@@ -62,17 +62,17 @@ class Tweet {
             return 0;
         }
         //TODO: prase the distance from the text of the tweet
-        if (!(this.text.startsWith("Just completed a") || this.text.startsWith("Just posted a "))) {
+        if (!(this.text.startsWith("Just completed a ") || this.text.startsWith("Just posted a "))) {
             return 0;
         }
 
         const words = this.text.split(" ");
         const amount = parseFloat(words[3]); // cast string to float
 
-        if (words[4] = "km") {
-            return amount / 1.609
+        if (words[4] == "km") {
+            return amount / 1.609;
         }
-        if (words[4] = "mi") {
+        if (words[4] == "mi") {
             return amount;
         }
         return 0;
