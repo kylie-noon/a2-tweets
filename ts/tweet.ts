@@ -1,33 +1,45 @@
 class Tweet {
-	private text:string;
-	time:Date;
+    private text: string;
+    time: Date;
 
-	constructor(tweet_text:string, tweet_time:string) {
+    constructor(tweet_text: string, tweet_time: string) {
         this.text = tweet_text;
-		this.time = new Date(tweet_time);//, "ddd MMM D HH:mm:ss Z YYYY"
-	}
+        this.time = new Date(tweet_time);//, "ddd MMM D HH:mm:ss Z YYYY"
+    }
 
-	//returns either 'live_event', 'achievement', 'completed_event', or 'miscellaneous'
-    get source():string {
+    //returns either 'live_event', 'achievement', 'completed_event', or 'miscellaneous'
+    get source(): string {
         //TODO: identify whether the source is a live event, an achievement, a completed event, or miscellaneous.
-        return "unknown";
+        // return "unknown";
+        const t = this.text;
+
+        if (t.includes("#RKLive") || t.startsWith("Watch my")) {
+            return "live_event";
+        }
+        if (t.includes("I just set a goal") || t.startsWith("Achieved") || t.includes("#FitnessAlerts")) {
+            return "achievement";
+        }
+        if (t.includes("Just completed a") || t.includes("Just posted a") || t.startsWith("Completed a") || t.startsWith("I just completed") || t.startsWith("I just ran with")) {
+            return "completed_event";
+        }
+        return "miscellaneous";
     }
 
     //returns a boolean, whether the text includes any content written by the person tweeting.
-    get written():boolean {
+    get written(): boolean {
         //TODO: identify whether the tweet is written
-        return false;
+        return this.getUserWrittenText() != "";
     }
 
-    get writtenText():string {
-        if(!this.written) {
+    get writtenText(): string {
+        if (!this.written) {
             return "";
         }
         //TODO: parse the written text from the tweet
-        return "";
+        return this.getUserWrittenText();
     }
 
-    get activityType():string {
+    get activityType(): string {
         if (this.source != 'completed_event') {
             return "unknown";
         }
@@ -35,16 +47,42 @@ class Tweet {
         return "";
     }
 
-    get distance():number {
-        if(this.source != 'completed_event') {
+    get distance(): number {
+        if (this.source != 'completed_event') {
             return 0;
         }
         //TODO: prase the distance from the text of the tweet
         return 0;
     }
 
-    getHTMLTableRow(rowNumber:number):string {
+    getHTMLTableRow(rowNumber: number): string {
         //TODO: return a table row which summarizes the tweet with a clickable link to the RunKeeper activity
         return "<tr></tr>";
+    }
+
+    // tweet activity - new helper
+    private getUserWrittenText(): string {
+        if (this.source != 'completed_event') {
+            return "";
+        }
+        const dashes = this.text.indexOf(" - ");
+        if (dashes == -1) {
+            return "";
+        }
+
+        let result = this.text.substring(dashes + 3);
+
+        const links = result.indexOf("https://t.co/");
+        if (links != -1) {
+            result = result.substring(0, links);
+        }
+
+        result = result.replace("#Runkeeper", "").trim();
+
+        if (result == "TomTom MySports Watch") {
+            return "";
+        }
+
+        return result;
     }
 }
