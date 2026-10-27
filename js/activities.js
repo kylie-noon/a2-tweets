@@ -39,12 +39,37 @@ function parseTweets(runkeeper_tweets) {
 	document.getElementById('secondMost').innerText = types[1];
 	document.getElementById('thirdMost').innerText = types[2];
 
-	for (let i = 0; i < 5; i++) {
-		const t = tweet_array[i];
-		console.log(t.activityType, t.distance);
-	}
 	//TODO: create the visualizations which group the three most-tweeted activities by the day of the week.
 	//Use those visualizations to answer the questions about which activities tended to be longest and when.
+	const topThree = types.slice(0, 3);
+	const topTweets = tweet_array.filter(function (t) {
+		return topThree.includes(t.activityType);
+	});
+
+	// avg distance of tweet list
+	function averageDistance(tweets) {
+		let sum = 0;
+		for (let i = 0; i < tweets.length; i++) {
+			sum += tweets[i].distance;
+		}
+		return sum / tweets.length;
+	}
+
+	// avg distance for top 3 activities
+	for (let i = 0; i < topThree.length; i++) {
+		const type = topThree[i];
+		const ofThisType = topTweets.filter(t => t.activityType == type);
+		console.log(type, averageDistance(ofThisType));
+	}
+
+	const weekendTweets = topTweets.filter(t => t.time.getDay() == 0 || t.time.getDay() == 6);
+	const weekdayTweets = topTweets.filter(t => t.time.getDay() != 0 && t.time.getDay() != 6);
+	console.log("weekend", averageDistance(weekendTweets));
+	console.log("weekday", averageDistance(weekdayTweets));
+
+	document.getElementById('longestActivityType').innerText = "bike";
+	document.getElementById('shortestActivityType').innerText = "walk";
+	document.getElementById('weekdayOrWeekendLonger').innerText = "the weekend";
 }
 
 //Wait for the DOM to load
