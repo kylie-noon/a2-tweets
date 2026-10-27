@@ -11,16 +11,6 @@ function parseTweets(runkeeper_tweets) {
 
 	//TODO: create a new array or manipulate tweet_array to create a graph of the number of tweets containing each type of activity.
 
-	activity_vis_spec = {
-		"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-		"description": "A graph of the number of Tweets containing each type of activity.",
-		"data": {
-			"values": tweet_array
-		}
-		//TODO: Add mark and encoding
-	};
-	vegaEmbed('#activityVis', activity_vis_spec, { actions: false });
-
 	const counts = {};
 	for (let i = 0; i < tweet_array.length; i++) {
 		const t = tweet_array[i];
@@ -41,6 +31,27 @@ function parseTweets(runkeeper_tweets) {
 
 	//TODO: create the visualizations which group the three most-tweeted activities by the day of the week.
 	//Use those visualizations to answer the questions about which activities tended to be longest and when.
+	const activityData = types.map(function (type) {
+		return { activity: type, count: counts[type] };
+	});
+
+	activity_vis_spec = {
+		"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+		"description": "A graph of the number of Tweets containing each type of activity.",
+		"data": {
+			"values": activityData
+		},
+		//TODO: Add mark and encoding
+		"mark": "bar",
+		"encoding": {
+			"x": { "field": "activity", "type": "nominal", "sort": "-y", "title": "Activity type" },
+			"y": { "field": "count", "type": "quantitative", "title": "Number of tweets" }
+		}
+
+	};
+	vegaEmbed('#activityVis', activity_vis_spec, { actions: false });
+
+
 	const topThree = types.slice(0, 3);
 	const topTweets = tweet_array.filter(function (t) {
 		return topThree.includes(t.activityType);
