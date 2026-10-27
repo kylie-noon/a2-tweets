@@ -31,10 +31,13 @@ function parseTweets(runkeeper_tweets) {
 
 	//TODO: create the visualizations which group the three most-tweeted activities by the day of the week.
 	//Use those visualizations to answer the questions about which activities tended to be longest and when.
+
+	// new array
 	const activityData = types.map(function (type) {
 		return { activity: type, count: counts[type] };
 	});
 
+	// chart 1
 	activity_vis_spec = {
 		"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
 		"description": "A graph of the number of Tweets containing each type of activity.",
@@ -70,17 +73,80 @@ function parseTweets(runkeeper_tweets) {
 	for (let i = 0; i < topThree.length; i++) {
 		const type = topThree[i];
 		const ofThisType = topTweets.filter(t => t.activityType == type);
-		console.log(type, averageDistance(ofThisType));
+		// console.log(type, averageDistance(ofThisType));
 	}
 
 	const weekendTweets = topTweets.filter(t => t.time.getDay() == 0 || t.time.getDay() == 6);
 	const weekdayTweets = topTweets.filter(t => t.time.getDay() != 0 && t.time.getDay() != 6);
-	console.log("weekend", averageDistance(weekendTweets));
-	console.log("weekday", averageDistance(weekdayTweets));
+	// console.log("weekend", averageDistance(weekendTweets));
+	// console.log("weekday", averageDistance(weekdayTweets));
 
 	document.getElementById('longestActivityType').innerText = "bike";
 	document.getElementById('shortestActivityType').innerText = "walk";
 	document.getElementById('weekdayOrWeekendLonger').innerText = "the weekend";
+
+	// chart 2
+	const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+	const distanceData = topTweets.map(function (t) {
+		return {
+			activity: t.activityType,
+			day: dayNames[t.time.getDay()],
+			distance: t.distance
+		};
+	});
+
+	const distance_vis_spec = {
+		"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+		"description": "A graph of the number of Tweets containing each type of activity.",
+		"data": {
+			"values": distanceData
+		},
+		"width": 400,
+		"mark": { "type": "point", "opacity": 0.5 },
+		"encoding": {
+			"x": { "field": "day", "type": "nominal", "sort": dayNames, "title": "time (day)" },
+			"y": { "field": "distance", "type": "quantitative", "title": "distance" },
+			"color": { "field": "activity", "type": "nominal", "title": "Activity" }
+		}
+
+	};
+	vegaEmbed('#distanceVis', distance_vis_spec, { actions: false });
+
+	// chart 3
+	const distance_mean_spec = {
+		"$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+		"description": "A graph of the number of Tweets containing each type of activity.",
+		"data": {
+			"values": distanceData
+		},
+		"width": 400,
+		"mark": { "type": "point", "opacity": 1 },
+		"encoding": {
+			"x": { "field": "day", "type": "nominal", "sort": dayNames, "title": "time (day)" },
+			"y": { "aggregate": "mean", "field": "distance", "type": "quantitative", "title": "Mean of distance" },
+			"color": { "field": "activity", "type": "nominal", "title": "Activity" }
+		}
+
+	};
+	vegaEmbed('#distanceVisAggregated', distance_mean_spec, { actions: false });
+
+	document.getElementById('distanceVisAggregated').style.display = 'none';
+	document.getElementById('aggregate').addEventListener('click', function () {
+		const allGraph = document.getElementById('distanceVis');
+		const meanGraph = document.getElementById('distanceVisAggregated');
+		const button = document.getElementById('aggregate');
+
+		if (meanGraph.style.display == 'none') {
+			allGraph.style.display = 'none';
+			meanGraph.style.display = 'block';
+			button.innerText = 'Show all activities';
+		} else {
+			allGraph.style.display = 'block';
+			meanGraph.style.display = 'none';
+			button.innerText = 'Show means';
+		}
+	});
 }
 
 //Wait for the DOM to load
